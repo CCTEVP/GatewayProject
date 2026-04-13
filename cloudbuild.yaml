@@ -1,0 +1,53 @@
+# Cloud Build — triggered automatically on repository push
+#
+# Required substitutions (set in the Cloud Build trigger or here as defaults):
+#   _REGION  : Artifact Registry region  (e.g. europe-west1)
+#   _SERVICE : Cloud Run service name     (e.g. gateway-api)
+#   _REPO    : Artifact Registry repo     (e.g. cloud-run-source-deploy)
+#
+# Environment variables for the Cloud Run service must be configured separately
+# in the Cloud Run console or via --set-env-vars below:
+#   EXTERNAL_API_BASE_URL, EXTERNAL_API_APP_ID, EXTERNAL_API_DEFAULT_UNITS,
+#   EXTERNAL_API_TIMEOUT_MS, CACHE_API_RESPONSE_SECONDS
+
+substitutions:
+  _REGION: europe-west1
+  _SERVICE: gateway-api
+  _REPO: cloud-run-source-deploy
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    id: Build
+    args:
+      - build
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$COMMIT_SHA
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:latest
+      - .
+
+  - name: gcr.io/cloud-builders/docker
+    id: Push
+    args:
+      - push
+      - --all-tags
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    id: Deploy
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE}
+      - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$COMMIT_SHA
+      - --region=${_REGION}
+      - --platform=managed
+      - --allow-unauthenticated
+
+images:
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$COMMIT_SHA
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:latest
+
+options:
+  logging: CLOUD_LOGGING_ONLY

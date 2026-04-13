@@ -1,0 +1,210 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Gateway Project API",
+    "version": "1.0.0",
+    "description": "Gateway API for normalizing client query parameters and forwarding requests to an upstream external API."
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "Current server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "System",
+      "description": "Operational endpoints"
+    },
+    {
+      "name": "Gateway",
+      "description": "Proxy endpoints for the upstream API"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["System"],
+        "summary": "Health check",
+        "description": "Returns basic service health and whether the upstream API base URL is configured.",
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "Service health status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/weather": {
+      "get": {
+        "tags": ["Gateway"],
+        "summary": "Get weather upstream JSON",
+        "description": "Fetches the upstream API and returns the JSON body unchanged. Provide either `latlong` or `duid`. If `latlong` is present, it is split into `lat` and `lon` before calling the upstream API. If `latlong` is missing and `duid` is provided, the gateway looks up `duid` in the local CSV data and uses that row's `LatLong` value. Direct `lat` and `lon` query parameters are not accepted for this endpoint. The gateway reads `EXTERNAL_API_APP_ID` from environment and defaults `units` to `metric` if omitted.",
+        "operationId": "getWeatherUpstreamResponse",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/LatLong"
+          },
+          {
+            "$ref": "#/components/parameters/Duid"
+          },
+          {
+            "$ref": "#/components/parameters/Units"
+          },
+          {
+            "$ref": "#/components/parameters/Output"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Weather data in the requested format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              },
+              "application/javascript": {
+                "schema": {
+                  "type": "string",
+                  "example": "data = {\"coord\":{\"lon\":12.86,\"lat\":56.67}}"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ErrorJson"
+          },
+          "404": {
+            "$ref": "#/components/responses/ErrorJson"
+          },
+          "500": {
+            "$ref": "#/components/responses/ErrorJson"
+          },
+          "502": {
+            "$ref": "#/components/responses/ErrorJson"
+          },
+          "504": {
+            "$ref": "#/components/responses/ErrorJson"
+          }
+        }
+      }
+    },
+    "/openapi.json": {
+      "get": {
+        "tags": ["System"],
+        "summary": "Get the OpenAPI document",
+        "description": "Returns the OpenAPI specification used by Swagger UI.",
+        "operationId": "getOpenApiDocument",
+        "responses": {
+          "200": {
+            "description": "OpenAPI document",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "LatLong": {
+        "name": "latlong",
+        "in": "query",
+        "required": false,
+        "description": "Latitude/longitude pair in `lat,lon` or `lat/lon` format. If provided, the gateway converts it to `lat` and `lon` before forwarding upstream.",
+        "schema": {
+          "type": "string",
+          "example": "3.4545,45.655"
+        }
+      },
+      "Duid": {
+        "name": "duid",
+        "in": "query",
+        "required": false,
+        "description": "Screen identifier looked up against the `ID` column in `src/data/screens_export_2026-04-09.csv`. If found, its `LatLong` value is used.",
+        "schema": {
+          "type": "string",
+          "example": "129099"
+        }
+      },
+      "Units": {
+        "name": "units",
+        "in": "query",
+        "required": false,
+        "description": "Example passthrough query parameter.",
+        "schema": {
+          "type": "string",
+          "example": "metric"
+        }
+      },
+      "Output": {
+        "name": "output",
+        "in": "query",
+        "required": false,
+        "description": "Response format. `js` (default) returns `data = {json}`; `json` returns raw JSON.",
+        "schema": {
+          "type": "string",
+          "enum": ["js", "json"],
+          "default": "js"
+        }
+      }
+    },
+    "responses": {
+      "ErrorJson": {
+        "description": "JSON error payload",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "HealthResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "ok"
+          },
+          "upstreamConfigured": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": ["status", "upstreamConfigured"]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Query parameter \"latlong\" must be in the form \"lat,lon\"."
+          },
+          "details": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": ["error"]
+      }
+    }
+  }
+}
