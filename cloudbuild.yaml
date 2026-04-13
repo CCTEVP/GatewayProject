@@ -12,7 +12,7 @@
 
 substitutions:
   _REGION: europe-west1
-  _SERVICE: gateway-api
+  _SERVICE: gatewayproject
   _REPO: cloud-run-source-deploy
 
 steps:
