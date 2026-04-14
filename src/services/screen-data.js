@@ -2,18 +2,13 @@ const fs = require("fs");
 const path = require("path");
 const { parse } = require("csv-parse/sync");
 
-const screenCsvPath = path.resolve(
-  __dirname,
-  "..",
-  "data",
-  "screens_export_2026-04-09.csv",
-);
+const screenCsvPath = path.resolve(__dirname, "..", "data", "players.csv");
 
-let cachedByDuid = null;
+let cachedByPlayerId = null;
 
-function loadScreenMap() {
-  if (cachedByDuid) {
-    return cachedByDuid;
+function loadPlayerMap() {
+  if (cachedByPlayerId) {
+    return cachedByPlayerId;
   }
 
   const csvContent = fs.readFileSync(screenCsvPath, "utf8");
@@ -23,31 +18,34 @@ function loadScreenMap() {
     bom: true,
   });
 
-  const byDuid = new Map();
+  const byPlayerId = new Map();
   for (const row of rows) {
-    const id = row.ID ? String(row.ID).trim() : "";
-    const latlong = row.LatLong ? String(row.LatLong).trim() : "";
+    const id = row.BroadsignPlayerID
+      ? String(row.BroadsignPlayerID).trim()
+      : "";
+    const lat = row.Latitude ? String(row.Latitude).trim() : "";
+    const lon = row.Longitude ? String(row.Longitude).trim() : "";
 
-    if (!id || !latlong) {
+    if (!id || !lat || !lon) {
       continue;
     }
 
-    byDuid.set(id, latlong);
+    byPlayerId.set(id, `${lat}/${lon}`);
   }
 
-  cachedByDuid = byDuid;
-  return cachedByDuid;
+  cachedByPlayerId = byPlayerId;
+  return cachedByPlayerId;
 }
 
-function getLatLongByDuid(duid) {
-  const normalizedDuid = String(duid || "").trim();
-  if (!normalizedDuid) {
+function getLatLongByPlayerId(playerId) {
+  const normalizedId = String(playerId || "").trim();
+  if (!normalizedId) {
     return null;
   }
 
-  return loadScreenMap().get(normalizedDuid) || null;
+  return loadPlayerMap().get(normalizedId) || null;
 }
 
 module.exports = {
-  getLatLongByDuid,
+  getLatLongByPlayerId,
 };

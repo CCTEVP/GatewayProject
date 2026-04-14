@@ -43,7 +43,8 @@ function getCache(query) {
       fs.unlinkSync(filePath);
       return null;
     }
-    return entry.data;
+    // Attach timestamp to the returned data
+    return { ...entry.data, timestamp: new Date(entry.cachedAt).toISOString() };
   } catch {
     return null;
   }
@@ -52,10 +53,11 @@ function getCache(query) {
 function setCache(query, data) {
   ensureCacheDir();
   const filePath = cacheFilePath(cacheKeyFor(query));
+  const now = Date.now();
   const entry = {
-    cachedAt: Date.now(),
+    cachedAt: now,
     ttlSeconds: config.cache.ttlSeconds,
-    data,
+    data: { ...data, timestamp: new Date(now).toISOString() },
   };
   fs.writeFileSync(filePath, JSON.stringify(entry), "utf8");
 }

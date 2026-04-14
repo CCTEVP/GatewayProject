@@ -46,14 +46,14 @@
       "get": {
         "tags": ["Gateway"],
         "summary": "Get weather upstream JSON",
-        "description": "Fetches the upstream API and returns the JSON body unchanged. Provide either `latlong` or `duid`. If `latlong` is present, it is split into `lat` and `lon` before calling the upstream API. If `latlong` is missing and `duid` is provided, the gateway looks up `duid` in the local CSV data and uses that row's `LatLong` value. Direct `lat` and `lon` query parameters are not accepted for this endpoint. The gateway reads `EXTERNAL_API_APP_ID` from environment and defaults `units` to `metric` if omitted.",
+        "description": "Fetches the upstream API and returns the JSON body unchanged. Provide either `latlong` or `playerid`. If `latlong` is present, it is split into `lat` and `lon` before calling the upstream API. If `latlong` is missing and `playerid` is provided, the gateway looks up `playerid` in the local CSV data (`players.csv`) and uses that row's `Latitude`/`Longitude` values. Direct `lat` and `lon` query parameters are not accepted for this endpoint. The gateway reads `EXTERNAL_API_APP_ID` from environment and defaults `units` to `metric` if omitted.",
         "operationId": "getWeatherUpstreamResponse",
         "parameters": [
           {
             "$ref": "#/components/parameters/LatLong"
           },
           {
-            "$ref": "#/components/parameters/Duid"
+            "$ref": "#/components/parameters/PlayerId"
           },
           {
             "$ref": "#/components/parameters/Units"
@@ -132,14 +132,14 @@
           "example": "3.4545,45.655"
         }
       },
-      "Duid": {
-        "name": "duid",
+      "PlayerId": {
+        "name": "playerid",
         "in": "query",
         "required": false,
-        "description": "Screen identifier looked up against the `ID` column in `src/data/screens_export_2026-04-09.csv`. If found, its `LatLong` value is used.",
+        "description": "BroadsignPlayerID looked up in `src/data/players.csv`. If found, its Latitude/Longitude values are used.",
         "schema": {
           "type": "string",
-          "example": "129099"
+          "example": "616575581"
         }
       },
       "Units": {

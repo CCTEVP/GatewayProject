@@ -50,10 +50,12 @@ app.get("/api/weather", async (req, res) => {
 
     if (output === "js") {
       res.setHeader("Content-Type", "application/javascript; charset=utf-8");
-      return res.send(`data = ${JSON.stringify(result.upstreamBody, null, 2)}`);
+      return res.send(
+        `data = ${JSON.stringify({ ...result.upstreamBody, timestamp: result.timestamp }, null, 2)}`,
+      );
     }
 
-    res.json(result.upstreamBody);
+    res.json({ ...result.upstreamBody, timestamp: result.timestamp });
   } catch (error) {
     res.status(error.statusCode || 500).json({
       error: error.message,

@@ -1,6 +1,6 @@
 const config = require("../config");
 const { normalizeLatLong, searchParamsToObject } = require("../lib/query");
-const { getLatLongByDuid } = require("./screen-data");
+const { getLatLongByPlayerId } = require("./screen-data");
 const { getCache, setCache } = require("./cache");
 
 function resolveQueryCoordinates(query) {
@@ -12,12 +12,16 @@ function resolveQueryCoordinates(query) {
     String(resolvedQuery.latlong).trim() !== "";
 
   if (!hasLatLong) {
-    const duid = resolvedQuery.duid;
-    if (duid !== undefined && duid !== null && String(duid).trim() !== "") {
-      const mappedLatLong = getLatLongByDuid(duid);
+    const playerid = resolvedQuery.playerid;
+    if (
+      playerid !== undefined &&
+      playerid !== null &&
+      String(playerid).trim() !== ""
+    ) {
+      const mappedLatLong = getLatLongByPlayerId(playerid);
       if (!mappedLatLong) {
         const error = new Error(
-          `No LatLong value found for duid \"${String(duid)}\".`,
+          `No Latitude/Longitude found for playerid \"${String(playerid)}\".`,
         );
         error.statusCode = 404;
         throw error;
@@ -27,8 +31,8 @@ function resolveQueryCoordinates(query) {
     }
   }
 
-  // duid is only for local lookup and should not be forwarded upstream.
-  delete resolvedQuery.duid;
+  // playerid is only for local lookup and should not be forwarded upstream.
+  delete resolvedQuery.playerid;
   // output controls gateway response format, not an upstream parameter.
   delete resolvedQuery.output;
   // appid must never be accepted from client query input.
@@ -123,12 +127,14 @@ async function fetchUpstreamJson(query) {
       throw upstreamError;
     }
 
+    const now = Date.now();
     const result = {
       normalizedParams,
       normalizedQuery: safeNormalizedQuery,
       upstreamUrl: safeUpstreamUrl,
       upstreamStatus: response.status,
       upstreamBody: payload,
+      timestamp: new Date(now).toISOString(),
     };
 
     setCache(safeNormalizedQuery, result);
