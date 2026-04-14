@@ -56,6 +56,9 @@
             "$ref": "#/components/parameters/PlayerId"
           },
           {
+            "$ref": "#/components/parameters/BspResourceId"
+          },
+          {
             "$ref": "#/components/parameters/Units"
           },
           {
@@ -136,7 +139,17 @@
         "name": "playerid",
         "in": "query",
         "required": false,
-        "description": "BroadsignPlayerID looked up in `src/data/players.csv`. If found, its Latitude/Longitude values are used.",
+        "description": "BroadsignPlayerID looked up in `src/data/players.csv`. If found, its Latitude/Longitude values are used. Alias: com.broadsign.suite.bsp.resource_id.",
+        "schema": {
+          "type": "string",
+          "example": "616575581"
+        }
+      },
+      "BspResourceId": {
+        "name": "com.broadsign.suite.bsp.resource_id",
+        "in": "query",
+        "required": false,
+        "description": "Alias for playerid. BroadsignPlayerID looked up in `src/data/players.csv`. If found, its Latitude/Longitude values are used.",
         "schema": {
           "type": "string",
           "example": "616575581"

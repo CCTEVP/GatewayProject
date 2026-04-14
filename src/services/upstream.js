@@ -4,7 +4,15 @@ const { getLatLongByPlayerId } = require("./screen-data");
 const { getCache, setCache } = require("./cache");
 
 function resolveQueryCoordinates(query) {
+  // Accept both playerid and com.broadsign.suite.bsp.resource_id as aliases
   const resolvedQuery = { ...query };
+  if (
+    resolvedQuery["com.broadsign.suite.bsp.resource_id"] &&
+    !resolvedQuery.playerid
+  ) {
+    resolvedQuery.playerid =
+      resolvedQuery["com.broadsign.suite.bsp.resource_id"];
+  }
 
   const hasLatLong =
     resolvedQuery.latlong !== undefined &&
@@ -31,8 +39,9 @@ function resolveQueryCoordinates(query) {
     }
   }
 
-  // playerid is only for local lookup and should not be forwarded upstream.
+  // playerid and alias are only for local lookup and should not be forwarded upstream.
   delete resolvedQuery.playerid;
+  delete resolvedQuery["com.broadsign.suite.bsp.resource_id"];
   // output controls gateway response format, not an upstream parameter.
   delete resolvedQuery.output;
   // appid must never be accepted from client query input.
