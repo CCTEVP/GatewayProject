@@ -1,7 +1,7 @@
 const config = require("../config");
 const { normalizeLatLong, searchParamsToObject } = require("../lib/query");
 const { getLatLongByPlayerId } = require("./screen-data");
-const { getCache, setCache } = require("./cache");
+const { cacheKeyFor, getCache, setCache } = require("./cache");
 
 function resolveQueryCoordinates(query) {
   // Accept both playerid and com.broadsign.suite.bsp.resource_id as aliases
@@ -90,9 +90,17 @@ async function fetchUpstreamJson(query) {
 
   const safeNormalizedQuery = { ...searchParamsToObject(normalizedParams) };
   delete safeNormalizedQuery.appid;
+  const cacheKey = cacheKeyFor(safeNormalizedQuery);
 
   const cached = getCache(safeNormalizedQuery);
-  if (cached) return cached;
+  if (cached) {
+    return {
+      ...cached,
+      cacheHit: true,
+      cacheKey,
+      normalizedQuery: safeNormalizedQuery,
+    };
+  }
 
   const controller = new AbortController();
   const timeoutHandle = setTimeout(
@@ -143,6 +151,8 @@ async function fetchUpstreamJson(query) {
       upstreamUrl: safeUpstreamUrl,
       upstreamStatus: response.status,
       upstreamBody: payload,
+      cacheHit: false,
+      cacheKey,
       timestamp: new Date(now).toISOString(),
     };
 

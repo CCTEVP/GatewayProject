@@ -4,6 +4,10 @@ const swaggerUi = require("swagger-ui-express");
 
 const config = require("./config");
 const { fetchUpstreamJson } = require("./services/upstream");
+const {
+  getWeatherRequestStats,
+  recordWeatherRequest,
+} = require("./services/request-stats");
 
 const app = express();
 const openApiFilePath = path.resolve(__dirname, "..", "openapi.json");
@@ -30,6 +34,10 @@ app.get("/health", (req, res) => {
   });
 });
 
+app.get("/stats/weather", (req, res) => {
+  res.json(getWeatherRequestStats());
+});
+
 app.get("/api/weather", async (req, res) => {
   try {
     if (req.query.lat !== undefined || req.query.lon !== undefined) {
@@ -47,6 +55,12 @@ app.get("/api/weather", async (req, res) => {
     }
 
     const result = await fetchUpstreamJson(req.query);
+
+    recordWeatherRequest({
+      requestQuery: req.query,
+      normalizedQuery: result.normalizedQuery,
+      cacheHit: result.cacheHit,
+    });
 
     if (output === "js") {
       res.setHeader("Content-Type", "application/javascript; charset=utf-8");

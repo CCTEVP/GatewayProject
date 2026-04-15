@@ -101,6 +101,26 @@
         }
       }
     },
+    "/stats/weather": {
+      "get": {
+        "tags": ["System"],
+        "summary": "Get weather request stats",
+        "description": "Returns statistics for successful `/api/weather` requests by combining hashed JSON files from the `stats` directory. Each stats file uses the exact same filename as the matching cache file, and stores separate request groups for incoming query variants that map to that shared normalized request.",
+        "operationId": "getWeatherRequestStats",
+        "responses": {
+          "200": {
+            "description": "Weather request statistics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WeatherRequestStatsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/openapi.json": {
       "get": {
         "tags": ["System"],
@@ -203,6 +223,340 @@
           }
         },
         "required": ["status", "upstreamConfigured"]
+      },
+      "WeatherRequestGroup": {
+        "type": "object",
+        "properties": {
+          "requestQuery": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "requestQueryString": {
+            "type": "string",
+            "example": "com.broadsign.suite.bsp.resource_id=616575581"
+          },
+          "normalizedQuery": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "normalizedQueryString": {
+            "type": "string",
+            "example": "lat=45.655&lon=3.4545&units=metric"
+          },
+          "cacheKey": {
+            "type": "string"
+          },
+          "requestCount": {
+            "type": "integer",
+            "example": 3
+          },
+          "cacheHits": {
+            "type": "integer",
+            "example": 2
+          },
+          "cacheMisses": {
+            "type": "integer",
+            "example": 1
+          },
+          "cachedResponses": {
+            "type": "integer",
+            "example": 2
+          },
+          "externalApiRequests": {
+            "type": "integer",
+            "example": 1
+          },
+          "sourceBreakdown": {
+            "type": "object",
+            "properties": {
+              "cache": {
+                "type": "integer",
+                "example": 2
+              },
+              "externalApi": {
+                "type": "integer",
+                "example": 1
+              }
+            },
+            "required": ["cache", "externalApi"]
+          },
+          "firstRequestedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastRequestedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "requestQuery",
+          "requestQueryString",
+          "normalizedQuery",
+          "normalizedQueryString",
+          "cacheKey",
+          "requestCount",
+          "cacheHits",
+          "cacheMisses",
+          "cachedResponses",
+          "externalApiRequests",
+          "sourceBreakdown",
+          "firstRequestedAt",
+          "lastRequestedAt"
+        ]
+      },
+      "WeatherRequestEntry": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string"
+          },
+          "requestedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "source": {
+            "type": "string",
+            "enum": ["cache", "externalApi"]
+          },
+          "cacheHit": {
+            "type": "boolean"
+          },
+          "requestQuery": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "requestQueryString": {
+            "type": "string"
+          },
+          "normalizedQuery": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "normalizedQueryString": {
+            "type": "string"
+          },
+          "cacheKey": {
+            "type": "string"
+          },
+          "statsFile": {
+            "type": "string",
+            "description": "The JSON file name in the `stats` directory for this request."
+          }
+        },
+        "required": [
+          "requestId",
+          "requestedAt",
+          "source",
+          "cacheHit",
+          "requestQuery",
+          "requestQueryString",
+          "normalizedQuery",
+          "normalizedQueryString",
+          "cacheKey",
+          "statsFile"
+        ]
+      },
+      "WeatherCacheGroupRequest": {
+        "type": "object",
+        "properties": {
+          "requestQuery": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "requestQueryString": {
+            "type": "string"
+          },
+          "requestCount": {
+            "type": "integer"
+          },
+          "cacheHits": {
+            "type": "integer"
+          },
+          "cacheMisses": {
+            "type": "integer"
+          },
+          "cachedResponses": {
+            "type": "integer"
+          },
+          "externalApiRequests": {
+            "type": "integer"
+          },
+          "sourceBreakdown": {
+            "type": "object",
+            "properties": {
+              "cache": {
+                "type": "integer"
+              },
+              "externalApi": {
+                "type": "integer"
+              }
+            },
+            "required": ["cache", "externalApi"]
+          },
+          "firstRequestedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastRequestedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "requestQuery",
+          "requestQueryString",
+          "requestCount",
+          "cacheHits",
+          "cacheMisses",
+          "cachedResponses",
+          "externalApiRequests",
+          "sourceBreakdown",
+          "firstRequestedAt",
+          "lastRequestedAt"
+        ]
+      },
+      "WeatherCacheGroup": {
+        "type": "object",
+        "properties": {
+          "cacheKey": {
+            "type": "string"
+          },
+          "normalizedQuery": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "normalizedQueryString": {
+            "type": "string"
+          },
+          "requestCount": {
+            "type": "integer"
+          },
+          "cacheHits": {
+            "type": "integer"
+          },
+          "cacheMisses": {
+            "type": "integer"
+          },
+          "cachedResponses": {
+            "type": "integer"
+          },
+          "externalApiRequests": {
+            "type": "integer"
+          },
+          "sourceBreakdown": {
+            "type": "object",
+            "properties": {
+              "cache": {
+                "type": "integer"
+              },
+              "externalApi": {
+                "type": "integer"
+              }
+            },
+            "required": ["cache", "externalApi"]
+          },
+          "firstRequestedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastRequestedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "distinctRequestCount": {
+            "type": "integer"
+          },
+          "requestGroups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WeatherCacheGroupRequest"
+            }
+          }
+        },
+        "required": [
+          "cacheKey",
+          "normalizedQuery",
+          "normalizedQueryString",
+          "requestCount",
+          "cacheHits",
+          "cacheMisses",
+          "cachedResponses",
+          "externalApiRequests",
+          "sourceBreakdown",
+          "firstRequestedAt",
+          "lastRequestedAt",
+          "distinctRequestCount",
+          "requestGroups"
+        ]
+      },
+      "WeatherRequestStatsResponse": {
+        "type": "object",
+        "properties": {
+          "totalRequests": {
+            "type": "integer",
+            "example": 10
+          },
+          "totalCacheHits": {
+            "type": "integer",
+            "example": 7
+          },
+          "totalCacheMisses": {
+            "type": "integer",
+            "example": 3
+          },
+          "totalCachedResponses": {
+            "type": "integer",
+            "example": 7
+          },
+          "totalExternalApiRequests": {
+            "type": "integer",
+            "example": 3
+          },
+          "sourceBreakdown": {
+            "type": "object",
+            "properties": {
+              "cache": {
+                "type": "integer",
+                "example": 7
+              },
+              "externalApi": {
+                "type": "integer",
+                "example": 3
+              }
+            },
+            "required": ["cache", "externalApi"]
+          },
+          "requestGroups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WeatherRequestGroup"
+            }
+          },
+          "requests": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WeatherRequestEntry"
+            }
+          },
+          "cacheGroups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WeatherCacheGroup"
+            }
+          }
+        },
+        "required": [
+          "totalRequests",
+          "totalCacheHits",
+          "totalCacheMisses",
+          "totalCachedResponses",
+          "totalExternalApiRequests",
+          "sourceBreakdown",
+          "requests",
+          "requestGroups",
+          "cacheGroups"
+        ]
       },
       "ErrorResponse": {
         "type": "object",

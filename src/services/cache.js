@@ -62,4 +62,4 @@ function setCache(query, data) {
   fs.writeFileSync(filePath, JSON.stringify(entry), "utf8");
 }
 
-module.exports = { getCache, setCache };
+module.exports = { cacheKeyFor, getCache, setCache };

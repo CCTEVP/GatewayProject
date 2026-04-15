@@ -3,6 +3,7 @@
 Minimal Node.js API gateway that accepts client query parameters, normalizes them for an upstream API, and exposes two responses:
 
 - `/api/weather` forwards the upstream JSON response directly.
+- `/stats/weather` shows combined stats for successful `/api/weather` requests by reading hashed JSON files from the `stats/` folder. Each stats file now uses the same filename as the matching cache entry, so cross-referencing between `stats/` and `cache/` is direct.
 - `/docs` opens Swagger UI for interactive testing.
 - `/openapi.json` returns the OpenAPI document used by Swagger UI.
 
@@ -63,9 +64,20 @@ EXTERNAL_API_DEFAULT_UNITS=metric
 ```text
 GET /api/weather?latlong=3.4545,45.655&units=metric
 GET /api/weather?duid=129099&units=metric
+GET /stats/weather
 GET /docs
 GET /openapi.json
 ```
+
+## Stats storage
+
+Each normalized `/api/weather` request writes to a hashed JSON file in `stats/`, using the exact same SHA-256 filename as the matching file in `cache/`.
+Multiple incoming query variants that resolve to the same normalized upstream request are grouped into that same stats file under separate request groups.
+The `/stats/weather` endpoint reads all of those files and combines them into a single response with:
+
+- `requests`: one entry per recorded request, including whether it came from `cache` or `externalApi`
+- `requestGroups`: grouped by the original incoming query string
+- `cacheGroups`: grouped by the normalized query/cache key
 
 ## Swagger
 
