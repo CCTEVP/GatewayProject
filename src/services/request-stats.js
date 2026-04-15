@@ -161,6 +161,21 @@ function listStatsFiles() {
     .filter((entry) => entry.isFile() && entry.name.endsWith(".json"));
 }
 
+function resetWeatherRequestStats() {
+  let clearedFiles = 0;
+
+  for (const entry of listStatsFiles()) {
+    fs.unlinkSync(path.join(STATS_DIR, entry.name));
+    clearedFiles += 1;
+  }
+
+  return {
+    status: "ok",
+    scope: "stats",
+    clearedFiles,
+  };
+}
+
 function isLegacySingleRequestRecord(record) {
   return Boolean(
     record &&
@@ -538,4 +553,5 @@ function getWeatherRequestStats() {
 module.exports = {
   getWeatherRequestStats,
   recordWeatherRequest,
+  resetWeatherRequestStats,
 };

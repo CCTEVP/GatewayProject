@@ -121,6 +121,46 @@
         }
       }
     },
+    "/stats/reset": {
+      "post": {
+        "tags": ["System"],
+        "summary": "Reset stored weather stats",
+        "description": "Deletes all generated JSON files from the `stats` directory and returns the number of removed files.",
+        "operationId": "resetWeatherRequestStats",
+        "responses": {
+          "200": {
+            "description": "Weather stats reset result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResetResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cache/reset": {
+      "post": {
+        "tags": ["System"],
+        "summary": "Reset cached weather responses",
+        "description": "Deletes all generated JSON files from the `cache` directory and returns the number of removed files.",
+        "operationId": "resetWeatherCache",
+        "responses": {
+          "200": {
+            "description": "Cache reset result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResetResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/openapi.json": {
       "get": {
         "tags": ["System"],
@@ -223,6 +263,24 @@
           }
         },
         "required": ["status", "upstreamConfigured"]
+      },
+      "ResetResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "ok"
+          },
+          "scope": {
+            "type": "string",
+            "enum": ["cache", "stats"]
+          },
+          "clearedFiles": {
+            "type": "integer",
+            "example": 3
+          }
+        },
+        "required": ["status", "scope", "clearedFiles"]
       },
       "WeatherRequestGroup": {
         "type": "object",

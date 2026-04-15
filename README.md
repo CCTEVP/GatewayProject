@@ -4,6 +4,8 @@ Minimal Node.js API gateway that accepts client query parameters, normalizes the
 
 - `/api/weather` forwards the upstream JSON response directly.
 - `/stats/weather` shows combined stats for successful `/api/weather` requests by reading hashed JSON files from the `stats/` folder. Each stats file now uses the same filename as the matching cache entry, so cross-referencing between `stats/` and `cache/` is direct.
+- `/stats/reset` clears all stored weather stats files.
+- `/cache/reset` clears all stored cached response files.
 - `/docs` opens Swagger UI for interactive testing.
 - `/openapi.json` returns the OpenAPI document used by Swagger UI.
 
@@ -65,6 +67,8 @@ EXTERNAL_API_DEFAULT_UNITS=metric
 GET /api/weather?latlong=3.4545,45.655&units=metric
 GET /api/weather?duid=129099&units=metric
 GET /stats/weather
+POST /stats/reset
+POST /cache/reset
 GET /docs
 GET /openapi.json
 ```

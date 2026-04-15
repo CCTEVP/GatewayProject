@@ -29,6 +29,14 @@ function cacheFilePath(key) {
   return path.join(CACHE_DIR, `${key}.json`);
 }
 
+function listCacheFiles() {
+  ensureCacheDir();
+
+  return fs
+    .readdirSync(CACHE_DIR, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".json"));
+}
+
 function getCache(query) {
   ensureCacheDir();
   const filePath = cacheFilePath(cacheKeyFor(query));
@@ -62,4 +70,19 @@ function setCache(query, data) {
   fs.writeFileSync(filePath, JSON.stringify(entry), "utf8");
 }
 
-module.exports = { cacheKeyFor, getCache, setCache };
+function resetCache() {
+  let clearedFiles = 0;
+
+  for (const entry of listCacheFiles()) {
+    fs.unlinkSync(path.join(CACHE_DIR, entry.name));
+    clearedFiles += 1;
+  }
+
+  return {
+    status: "ok",
+    scope: "cache",
+    clearedFiles,
+  };
+}
+
+module.exports = { cacheKeyFor, getCache, resetCache, setCache };

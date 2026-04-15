@@ -3,10 +3,12 @@ const express = require("express");
 const swaggerUi = require("swagger-ui-express");
 
 const config = require("./config");
+const { resetCache } = require("./services/cache");
 const { fetchUpstreamJson } = require("./services/upstream");
 const {
   getWeatherRequestStats,
   recordWeatherRequest,
+  resetWeatherRequestStats,
 } = require("./services/request-stats");
 
 const app = express();
@@ -37,6 +39,20 @@ app.get("/health", (req, res) => {
 app.get("/stats/weather", (req, res) => {
   res.json(getWeatherRequestStats());
 });
+
+function handleStatsReset(req, res) {
+  res.json(resetWeatherRequestStats());
+}
+
+function handleCacheReset(req, res) {
+  res.json(resetCache());
+}
+
+app.get("/stats/reset", handleStatsReset);
+app.post("/stats/reset", handleStatsReset);
+
+app.get("/cache/reset", handleCacheReset);
+app.post("/cache/reset", handleCacheReset);
 
 app.get("/api/weather", async (req, res) => {
   try {
