@@ -8,9 +8,10 @@ RUN npm ci --omit=dev
 COPY src/ ./src/
 COPY openapi.json ./
 
-# Create cache directory and non-root user
+# Create writable runtime directories and non-root user
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup \
- && mkdir -p cache && chown appuser:appgroup cache
+ && mkdir -p cache stats \
+ && chown appuser:appgroup cache stats
 
 USER appuser
 
